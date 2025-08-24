@@ -1,0 +1,20 @@
+name: 粤考通题库自动更新
+on:
+  schedule:
+    - cron: '0 3 * * *'  # 每日凌晨3点（UTC时间，国内是11点，不用改）
+jobs:
+  scrape-and-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取爬虫代码
+        uses: actions/checkout@v4
+      - name: 安装Python依赖
+        run: pip install cloudscraper requests pandas
+      - name: 执行爬虫（爬取行测/申论题库）
+        run: python scraper/main.py  # 爬虫脚本后续会加
+      - name: 同步至Firebase
+        uses: w9jds/firebase-action@v2  #项目IDyuekaoton
+        with:
+          args: database:set /questions ./data/questions.json  # 同步到Firebase的questions节点
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}  # 密钥后续配置
